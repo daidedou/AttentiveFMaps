@@ -19,7 +19,7 @@ class KNNSearch(object):
 
     def query(self, kpts, k, return_dists=False):
         kpts = np.asarray(kpts, dtype=self.DTYPE)
-        nndists, nnindices = self.kdtree.query(kpts, k=k, n_jobs=self.NJOBS)
+        nndists, nnindices = self.kdtree.query(kpts, k=k, workers=self.NJOBS)
         if return_dists:
             return nnindices, nndists
         else:

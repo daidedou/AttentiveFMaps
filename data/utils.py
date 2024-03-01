@@ -16,8 +16,8 @@ ROOT_DIR = osp.join(osp.abspath(osp.dirname(__file__)), '../')
 if ROOT_DIR not in sys.path:
     sys.path.append(ROOT_DIR)
 
-from utils.misc import KNNSearch
-from utils.io import may_create_folder
+from utils_fmaps.misc import KNNSearch
+from utils_fmaps.io import may_create_folder
 
 
 class CorrLoader(object):
