@@ -375,7 +375,7 @@ def compute_operators(verts, faces, k_eig, normals=None):
     else:
         edges = torch.tensor(np.stack((inds_row, inds_col), axis=0), device=device, dtype=faces.dtype)
         edge_vecs = edge_tangent_vectors(verts, frames, edges)
-        grad_mat_np = build_grad(verts, edges, edge_vecs)
+        grad_mat_np = build_grad(verts.cpu(), edges.cpu(), edge_vecs.cpu())
 
     # Split complex gradient in to two real sparse mats (torch doesn't like complex sparse matrices)
     gradX_np = np.real(grad_mat_np)
