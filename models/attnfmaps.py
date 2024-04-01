@@ -9,7 +9,8 @@ if ROOT_DIR not in sys.path:
     sys.path.append(ROOT_DIR)
 
 from models.utils import pdists
-from data.utils import farthest_point_sampling
+print(sys.path)
+from AttentiveFMaps.data.utils import farthest_point_sampling
 
 
 class SEBlock(nn.Module):
