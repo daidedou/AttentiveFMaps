@@ -24,8 +24,8 @@ from models.attnfmaps import SpectralAttentionNet
 from models.utils import DiffNNSearch, to_numpy, validate_gradient, validate_tensor, fmap_to_image, bslice
 from models.utils import FMAP_SOLVERS, frobenius_loss, diff_zoomout
 from diffusion_net.layers import DiffusionNet
-from data import get_data_dirs, collate_default, prepare_batch
-from data.utils import farthest_point_sampling
+from AttentiveFMaps.data import get_data_dirs, collate_default, prepare_batch
+from AttentiveFMaps.data.utils import farthest_point_sampling
 from utils_fmaps.fmap import FM_to_p2p
 from utils_fmaps.io import may_create_folder
 from utils_fmaps.misc import incrange, validate_str, run_trainer
