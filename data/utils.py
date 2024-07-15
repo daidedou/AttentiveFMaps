@@ -18,7 +18,9 @@ if ROOT_DIR not in sys.path:
 
 from utils_fmaps.misc import KNNSearch
 from utils_fmaps.io import may_create_folder
-
+from diffusion_net import geometry as diff_geom
+from diffusion_net.utils import sparse_torch_to_np
+from diffusion_net.utils import toNP
 
 class CorrLoader(object):
 
@@ -178,9 +180,22 @@ def compute_surface_area(vertices, faces):
     mesh = o3d.geometry.TriangleMesh(o3d.utility.Vector3dVector(vertices), o3d.utility.Vector3iVector(faces))
     return mesh.get_surface_area()
  
+def numpy_to_open3d_mesh(V, F):
+    # Create an empty TriangleMesh object
+    mesh = o3d.geometry.TriangleMesh()
+    # Set vertices
+    mesh.vertices = o3d.utility.Vector3dVector(V)
+    # Set triangles
+    mesh.triangles = o3d.utility.Vector3iVector(F)
+    return mesh
+
 
 def load_mesh(filepath, scale=True, return_vnormals=False):
-    mesh = o3d.io.read_triangle_mesh(filepath)
+    if os.path.splitext(filepath)[1] == ".obj": #Avoid pre process from open3d
+        V, F = pp3d.read_mesh(filepath)
+        mesh = numpy_to_open3d_mesh(V, F)
+    else:
+        mesh = o3d.io.read_triangle_mesh(filepath)
 
     tmat = np.identity(4, dtype=np.float32)
     center = mesh.get_center()
@@ -233,11 +248,7 @@ def load_operators(filepath):
     )
 
 
-def compute_operators(verts, faces, normals, k_eig, cache_path=None):
-    from diffusion_net import geometry as diff_geom
-    from diffusion_net.utils import sparse_torch_to_np
-    from diffusion_net.utils import toNP
-
+def compute_operators(verts, faces, normals, k_eig, cache_path=None, force_save=False):
     frames, mass, L, evals, evecs, gradX, gradY = diff_geom.compute_operators(torch.from_numpy(verts),
                                                                               torch.from_numpy(faces).long(),
                                                                               k_eig,
@@ -257,7 +268,7 @@ def compute_operators(verts, faces, normals, k_eig, cache_path=None):
     hks = compute_hks(evecs_np, evals_np, mass_np, n_descr=128, subsample_step=1, n_eig=128)
     wks = compute_wks(evecs_np, evals_np, mass_np, n_descr=128, subsample_step=1, n_eig=128)
 
-    if cache_path is not None and not Path(cache_path).is_file():
+    if cache_path is not None and (not Path(cache_path).is_file() or force_save):
         may_create_folder(str(Path(cache_path).parent))
         np.savez(
             cache_path,
