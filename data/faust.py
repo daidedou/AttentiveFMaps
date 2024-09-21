@@ -6,17 +6,28 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 from pathlib import Path
+import potpourri3d as pp3d 
+import open3d as o3d 
 
 ROOT_DIR = osp.join(osp.abspath(osp.dirname(__file__)), '../')
 if ROOT_DIR not in sys.path:
     sys.path.append(ROOT_DIR)
 
-from data.utils import compute_vertex_normals
-from data.utils import compute_operators, load_operators
-from data.utils import farthest_point_sampling
-from data.utils import pmap_to_fmap, fmap_to_pmap
-from data.utils import compute_geodesic_distance
-from utils.io import list_files, may_create_folder
+from .utils import compute_vertex_normals
+from .utils import compute_operators, load_operators
+from .utils import farthest_point_sampling
+from .utils import pmap_to_fmap, fmap_to_pmap
+from .utils import compute_geodesic_distance
+from utils_fmaps.io import list_files, may_create_folder
+
+def numpy_to_open3d_mesh(V, F):
+    # Create an empty TriangleMesh object
+    mesh = o3d.geometry.TriangleMesh()
+    # Set vertices
+    mesh.vertices = o3d.utility.Vector3dVector(V)
+    # Set triangles
+    mesh.triangles = o3d.utility.Vector3iVector(F)
+    return mesh
 
 
 class ShapeDataset(Dataset):
@@ -77,9 +88,8 @@ class ShapeDataset(Dataset):
         return shape_list
 
     def _load_mesh(self, filepath, scale=True, return_vnormals=False):
-        import open3d as o3d
-
-        mesh = o3d.io.read_triangle_mesh(filepath)
+        V, F = pp3d.read_mesh(filepath)
+        mesh = numpy_to_open3d_mesh(V, F)
 
         tmat = np.identity(4, dtype=np.float32)
         center = mesh.get_center()
@@ -285,21 +295,21 @@ class ShapePairDataset(Dataset):
             fmap01_gt = pmap_to_fmap(sdict0['evecs'][:, :fmap_size], sdict1['evecs'][:, :fmap_size], corr_gt)
             pdict[f'fmap01_{fmap_size}_gt'] = fmap01_gt
 
-        for idx in range(2):
-            indices_sel = farthest_point_sampling(pdict[f'vertices{idx}'], self.num_corrs, random_start=is_train)
-            for k in ['vertices', 'evecs', 'feats']:
-                kid = f'{k}{idx}'
-                if kid in pdict:
-                    pdict[kid + '_sub'] = pdict[kid][indices_sel, :]
-            if self.use_geodists:
-                geodists = compute_geodesic_distance(pdict[f'vertices{idx}'], pdict[f'faces{idx}'], indices_sel)
-                pdict[f'geodists{idx}_sub'] = geodists
-            pdict[f'vindices{idx}_sub'] = indices_sel
+        # for idx in range(2):
+        #     indices_sel = farthest_point_sampling(pdict[f'vertices{idx}'], self.num_corrs, random_start=is_train)
+        #     for k in ['vertices', 'evecs', 'feats']:
+        #         kid = f'{k}{idx}'
+        #         if kid in pdict:
+        #             pdict[kid + '_sub'] = pdict[kid][indices_sel, :]
+        #     if self.use_geodists:
+        #         geodists = compute_geodesic_distance(pdict[f'vertices{idx}'], pdict[f'faces{idx}'], indices_sel)
+        #         pdict[f'geodists{idx}_sub'] = geodists
+        #     pdict[f'vindices{idx}_sub'] = indices_sel
 
-        fmap_size = self.fmap_sizes[-1]
-        corr_gt_sub = fmap_to_pmap(pdict['evecs0_sub'][:, :fmap_size], pdict['evecs1_sub'][:, :fmap_size],
-                                   pdict[f'fmap01_{fmap_size}_gt'])
-        pdict['corr_gt_sub'] = corr_gt_sub
+        # fmap_size = self.fmap_sizes[-1]
+        # corr_gt_sub = fmap_to_pmap(pdict['evecs0_sub'][:, :fmap_size], pdict['evecs1_sub'][:, :fmap_size],
+        #                            pdict[f'fmap01_{fmap_size}_gt'])
+        # pdict['corr_gt_sub'] = corr_gt_sub
 
         if is_train:
             fmap_size = self.fmap_sizes[0]
