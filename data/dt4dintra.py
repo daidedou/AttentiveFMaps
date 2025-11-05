@@ -9,9 +9,9 @@ ROOT_DIR = osp.join(osp.abspath(osp.dirname(__file__)), '../')
 if ROOT_DIR not in sys.path:
     sys.path.append(ROOT_DIR)
 
-from data.faust import ShapeDataset as FaustShapeDataset
-from data.faust import ShapePairDataset as FaustShapePairDataset
-from utils.io import read_lines
+from .faust import ShapeDataset as FaustShapeDataset
+from .faust import ShapePairDataset as FaustShapePairDataset
+from utils_fmaps.io import read_lines
 
 IGNORED_CATEGORIES = ['pumpkinhulk']
 

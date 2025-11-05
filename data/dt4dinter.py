@@ -9,10 +9,10 @@ ROOT_DIR = osp.join(osp.abspath(osp.dirname(__file__)), '../')
 if ROOT_DIR not in sys.path:
     sys.path.append(ROOT_DIR)
 
-from data.dt4dintra import IGNORED_CATEGORIES
-from data.dt4dintra import ShapeDataset
-from data.faust import ShapePairDataset as FaustShapePairDataset
-from utils.io import list_files
+from .dt4dintra import IGNORED_CATEGORIES
+from .dt4dintra import ShapeDataset
+from .faust import ShapePairDataset as FaustShapePairDataset
+from utils_fmaps.io import list_files
 
 
 class ShapePairDataset(FaustShapePairDataset):
